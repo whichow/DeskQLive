@@ -4,6 +4,7 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -18,7 +19,13 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        qLiveView = initializeForView(new QLive(), config);
+        config.r = config.g = config.b = config.a = 8;
+		qLiveView = initializeForView(new QLive(), config);
+        if (qLiveView instanceof SurfaceView) {
+            SurfaceView glView = (SurfaceView) qLiveView;
+            glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            glView.setZOrderOnTop(true);
+        }
 //		initialize(new QLive(), config);
 
         final WindowManager windowManager = getWindowManager();
@@ -28,8 +35,8 @@ public class AndroidLauncher extends AndroidApplication {
         } else {
             layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
         }
-        layoutParams.width = 200;
-        layoutParams.height = 200;
+        layoutParams.width = 500;
+        layoutParams.height = 500;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
         layoutParams.format = PixelFormat.TRANSPARENT;
