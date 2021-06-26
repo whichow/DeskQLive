@@ -10,9 +10,10 @@ import android.view.WindowManager;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.badlogic.gdx.backends.android.App;
 import com.whichow.deskqlive.QLive;
 
-public class AndroidLauncher extends AndroidApplication {
+public class AndroidLauncher extends App {
     View qLiveView;
 
 	@Override
