@@ -19,6 +19,9 @@ public class AndroidLauncher extends App {
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.activity_blank);
+
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.r = config.g = config.b = config.a = 8;
 		qLiveView = initializeForView(new QLive(), config);

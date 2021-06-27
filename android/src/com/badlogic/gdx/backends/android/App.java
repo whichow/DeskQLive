@@ -30,9 +30,25 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import com.badlogic.gdx.*;
+
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.ApplicationLogger;
+import com.badlogic.gdx.Audio;
+import com.badlogic.gdx.Files;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.LifecycleListener;
+import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.android.surfaceview.FillResolutionStrategy;
-import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Clipboard;
+import com.badlogic.gdx.utils.GdxNativesLoader;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.SnapshotArray;
+
+import java.lang.reflect.Method;
 
 /** An implementation of the {@link Application} interface for Android. Create an {@link Activity} that derives from this class. In
  * the {@link Activity#onCreate(Bundle)} method call the {@link #initialize(ApplicationListener)} method specifying the
@@ -118,9 +134,10 @@ public class App extends Activity implements AndroidApplicationBase {
         setApplicationLogger(new AndroidApplicationLogger());
         graphics = new AndroidGraphics(this, config, config.resolutionStrategy == null ? new FillResolutionStrategy()
                 : config.resolutionStrategy);
-        input = createInput(this, this, graphics.view, config);
-        audio = createAudio(this, config);
-        files = createFiles();
+        input = AndroidInputFactory.newAndroidInput(this, this, graphics.view, config);
+        audio = new AndroidAudio(this, config);
+        this.getFilesDir(); // workaround for Android bug #10515463
+        files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
         net = new AndroidNet(this, config);
         this.listener = listener;
         this.handler = new Handler();
@@ -169,13 +186,19 @@ public class App extends Activity implements AndroidApplicationBase {
         hideStatusBar(this.hideStatusBar);
         useImmersiveMode(this.useImmersiveMode);
         if (this.useImmersiveMode && getVersion() >= Build.VERSION_CODES.KITKAT) {
-            AndroidVisibilityListener vlistener = new AndroidVisibilityListener();
-            vlistener.createListener(this);
+            try {
+                Class<?> vlistener = Class.forName("com.badlogic.gdx.backends.android.AndroidVisibilityListener");
+                Object o = vlistener.newInstance();
+                Method method = vlistener.getDeclaredMethod("createListener", AndroidApplicationBase.class);
+                method.invoke(o, this);
+            } catch (Exception e) {
+                log("AndroidApplication", "Failed to create AndroidVisibilityListener", e);
+            }
         }
 
         // detect an already connected bluetooth keyboardAvailable
         if (getResources().getConfiguration().keyboard != Configuration.KEYBOARD_NOKEYS)
-            input.setKeyboardAvailable(true);
+            this.getInput().keyboardAvailable = true;
     }
 
     protected FrameLayout.LayoutParams createLayoutParams () {
@@ -192,10 +215,17 @@ public class App extends Activity implements AndroidApplicationBase {
     }
 
     protected void hideStatusBar (boolean hide) {
-        if (!hide) return;
+        if (!hide || getVersion() < 11) return;
 
         View rootView = getWindow().getDecorView();
-        rootView.setSystemUiVisibility(0x1);
+
+        try {
+            Method m = View.class.getMethod("setSystemUiVisibility", int.class);
+            if (getVersion() <= 13) m.invoke(rootView, 0x0);
+            m.invoke(rootView, 0x1);
+        } catch (Exception e) {
+            log("AndroidApplication", "Can't hide status bar", e);
+        }
     }
 
     @Override
@@ -220,10 +250,15 @@ public class App extends Activity implements AndroidApplicationBase {
         if (!use || getVersion() < Build.VERSION_CODES.KITKAT) return;
 
         View view = getWindow().getDecorView();
-        int code = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        view.setSystemUiVisibility(code);
+        try {
+            Method m = View.class.getMethod("setSystemUiVisibility", int.class);
+            int code = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            m.invoke(view, code);
+        } catch (Exception e) {
+            log("AndroidApplication", "Can't set immersive mode", e);
+        }
     }
 
     @Override
@@ -297,11 +332,6 @@ public class App extends Activity implements AndroidApplicationBase {
     }
 
     @Override
-    public AndroidInput getInput () {
-        return input;
-    }
-
-    @Override
     public Files getFiles () {
         return files;
     }
@@ -309,6 +339,11 @@ public class App extends Activity implements AndroidApplicationBase {
     @Override
     public Graphics getGraphics () {
         return graphics;
+    }
+
+    @Override
+    public AndroidInput getInput () {
+        return input;
     }
 
     @Override
@@ -360,7 +395,7 @@ public class App extends Activity implements AndroidApplicationBase {
         super.onConfigurationChanged(config);
         boolean keyboardAvailable = false;
         if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) keyboardAvailable = true;
-        input.setKeyboardAvailable(keyboardAvailable);
+        input.keyboardAvailable = keyboardAvailable;
     }
 
     @Override
@@ -491,20 +526,5 @@ public class App extends Activity implements AndroidApplicationBase {
     @Override
     public Handler getHandler () {
         return this.handler;
-    }
-
-    @Override
-    public AndroidAudio createAudio (Context context, AndroidApplicationConfiguration config) {
-        return new DefaultAndroidAudio(context, config);
-    }
-
-    @Override
-    public AndroidInput createInput (Application activity, Context context, Object view, AndroidApplicationConfiguration config) {
-        return new DefaultAndroidInput(this, this, graphics.view, config);
-    }
-
-    protected AndroidFiles createFiles() {
-        this.getFilesDir(); // workaround for Android bug #10515463
-        return new DefaultAndroidFiles(this.getAssets(), this, true);
     }
 }
