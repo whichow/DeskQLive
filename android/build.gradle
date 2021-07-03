@@ -1,4 +1,12 @@
 android {
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\which\\Documents\\whichow-release-key.keystore')
+            storePassword 'WH@911208.com'
+            keyAlias 'whichow'
+            keyPassword 'WH@911208.com'
+        }
+    }
     buildToolsVersion "29.0.3"
     compileSdkVersion 29
     sourceSets {
@@ -25,8 +33,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -86,7 +95,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.whichow.deskqlive/com.whichow.deskqlive.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.whichow.deskqlive/com.whichow.deskqlive.rezero.AndroidLauncher'
 }
 
 eclipse.project.name = appName + "-android"

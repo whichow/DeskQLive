@@ -1,4 +1,4 @@
-package com.whichow.deskqlive;
+package com.whichow.deskqlive.rezero;
 
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -12,10 +12,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.App;
-import com.whichow.deskqlive.QLive;
 
 public class AndroidLauncher extends App {
     View qLiveView;

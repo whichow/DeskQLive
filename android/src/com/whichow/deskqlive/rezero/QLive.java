@@ -1,4 +1,4 @@
-package com.whichow.deskqlive;
+package com.whichow.deskqlive.rezero;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
