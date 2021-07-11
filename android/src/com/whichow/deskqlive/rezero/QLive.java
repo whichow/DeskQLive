@@ -49,7 +49,7 @@ public class QLive extends ApplicationAdapter {
 
 //		img = new Texture("dialog_device_waring.png");
         camera = new OrthographicCamera();
-        viewport = new FitViewport(800, 800, camera);
+        viewport = new FitViewport(1000, 1000, camera);
         batch = new PolygonSpriteBatch();
         renderer = new SkeletonRenderer();
 //        Log.d(TAG, "atlasPath: " + atlasPath);

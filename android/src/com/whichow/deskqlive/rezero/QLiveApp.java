@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -27,6 +28,9 @@ import java.util.Random;
 public class QLiveApp extends App {
     View qLiveView;
     QLive qLive;
+
+    private static final int VIEW_WIDTH = 500;
+    private static final int VIEW_HEIGHT = 500;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -81,8 +85,8 @@ public class QLiveApp extends App {
             } else {
                 layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
             }
-            layoutParams.width = 500;
-            layoutParams.height = 500;
+            layoutParams.width = VIEW_WIDTH;
+            layoutParams.height = VIEW_HEIGHT;
             layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                     | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -96,6 +100,17 @@ public class QLiveApp extends App {
                 public boolean onTouch(View view, MotionEvent motionEvent) {
                     int x = (int) motionEvent.getRawX();
                     int y = (int) motionEvent.getRawY();
+
+                    int[] location = new int[2];
+                    qLiveView.getLocationOnScreen(location);
+                    int viewX = location[0];
+                    int viewY = location[1];
+                    Point viewCenter = new Point(viewX + VIEW_WIDTH / 2, viewY + VIEW_HEIGHT / 2);
+
+                    Log.d("QLiveApp", "onTouch: x " + x + " y " + y + ", layout x" + viewX + " y " + viewY);
+                    if(x < viewCenter.x - 150 || x > viewCenter.x + 150 || y < viewCenter.y - 200 || y > viewCenter.y + 200) {
+                        return false;
+                    }
                     switch (motionEvent.getAction()) {
                         case MotionEvent.ACTION_DOWN:
                             lastX = x;
