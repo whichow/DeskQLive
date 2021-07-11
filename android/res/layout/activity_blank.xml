@@ -4,6 +4,12 @@
     android:id="@+id/content"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:gravity="center|bottom">
+    <Button
+        android:id="@+id/confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="选好啦">
+    </Button>
 </LinearLayout>

@@ -4,18 +4,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.App;
+
+import java.io.IOException;
+import java.util.Random;
 
 public class QLiveApp extends App {
     View qLiveView;
@@ -26,6 +33,31 @@ public class QLiveApp extends App {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_blank);
+
+        LinearLayout content = (LinearLayout)findViewById(R.id.content);
+
+        try {
+            String[] fileNames = getResources().getAssets().list("bg");
+            Random rand = new Random();
+            int n = rand.nextInt(fileNames.length);
+            Drawable bgImg = Drawable.createFromStream(getAssets().open("bg/" + fileNames[n]), null);
+            Log.d("QLiveApp", "bgImg: " + bgImg);
+            content.setBackground(bgImg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Button confirmBtn = (Button)findViewById(R.id.confirm);
+        Log.d("App", "confirmBtn: " + confirmBtn);
+        confirmBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_HOME);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
 
         if (Settings.canDrawOverlays(QLiveApp.this)) {
             AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
@@ -97,11 +129,6 @@ public class QLiveApp extends App {
     @Override
     protected void onResume() {
         super.onResume();
-
-//        Intent intent = new Intent(Intent.ACTION_MAIN);
-//        intent.addCategory(Intent.CATEGORY_HOME);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(intent);
     }
 
     @Override

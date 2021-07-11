@@ -20,7 +20,7 @@ public class AndroidLauncher extends Activity {
         TableLayout table = (TableLayout)findViewById(R.id.image_table);
         TableRow row1 = new TableRow(this);
         Button remBtn = new Button(this);
-        remBtn.setText("Rem");
+        remBtn.setText("雷姆");
         remBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -34,7 +34,7 @@ public class AndroidLauncher extends Activity {
         });
         row1.addView(remBtn);
         Button beatriceBtn = new Button(this);
-        beatriceBtn.setText("Beatrice");
+        beatriceBtn.setText("贝蒂");
         beatriceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -50,7 +50,7 @@ public class AndroidLauncher extends Activity {
         table.addView(row1);
         TableRow row2 = new TableRow(this);
         Button emiliaBtn = new Button(this);
-        emiliaBtn.setText("Emilia");
+        emiliaBtn.setText("艾米莉亚");
         emiliaBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,7 +64,7 @@ public class AndroidLauncher extends Activity {
         });
         row2.addView(emiliaBtn);
         Button ramBtn = new Button(this);
-        ramBtn.setText("Ram");
+        ramBtn.setText("拉姆");
         ramBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

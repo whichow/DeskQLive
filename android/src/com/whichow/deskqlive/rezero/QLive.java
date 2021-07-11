@@ -57,7 +57,7 @@ public class QLive extends ApplicationAdapter {
         binary = new SkeletonBinary(atlas);
         SkeletonData data = binary.readSkeletonData(Gdx.files.internal(skelPath));
         skeleton = new Skeleton(data);
-        skeleton.setPosition(280, -100);
+        skeleton.setPosition(230, -90);
         AnimationStateData stateData = new AnimationStateData(data); // Defines mixing (crossfading) between animations.
         stateData.setDefaultMix(0.5f);
         animations = stateData.getSkeletonData().getAnimations();
