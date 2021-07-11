@@ -1,5 +1,7 @@
 package com.whichow.deskqlive.rezero;
 
+import android.util.Log;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -23,6 +25,7 @@ import java.util.Random;
 
 public class QLive extends ApplicationAdapter {
 
+    private static final String TAG = "QLive";
     //	Texture img;
     OrthographicCamera camera;
     Viewport viewport;
@@ -32,8 +35,15 @@ public class QLive extends ApplicationAdapter {
     SkeletonBinary binary;
     Skeleton skeleton;
     AnimationState state;
-
     Array<Animation> animations;
+
+    String atlasPath;
+    String skelPath;
+
+    public QLive(String atlasPath, String skelPath) {
+        this.atlasPath = atlasPath;
+        this.skelPath = skelPath;
+    }
 
     public void create () {
 
@@ -42,9 +52,10 @@ public class QLive extends ApplicationAdapter {
         viewport = new FitViewport(800, 800, camera);
         batch = new PolygonSpriteBatch();
         renderer = new SkeletonRenderer();
-        atlas = new TextureAtlas(Gdx.files.internal("house_rem/house_rem.atlas"));
+//        Log.d(TAG, "atlasPath: " + atlasPath);
+        atlas = new TextureAtlas(Gdx.files.internal(atlasPath));
         binary = new SkeletonBinary(atlas);
-        SkeletonData data = binary.readSkeletonData(Gdx.files.internal("house_rem/house_rem.skel"));
+        SkeletonData data = binary.readSkeletonData(Gdx.files.internal(skelPath));
         skeleton = new Skeleton(data);
         skeleton.setPosition(280, -100);
         AnimationStateData stateData = new AnimationStateData(data); // Defines mixing (crossfading) between animations.
@@ -91,6 +102,7 @@ public class QLive extends ApplicationAdapter {
         int randomNum = rand.nextInt(animations.size);
         Animation animation = animations.get(randomNum);
         String animName = animation.getName();
+        Log.d(TAG, "changeAnimation: " + animName);
         if(animName == "idle" || animName.endsWith("_r") || animName.startsWith("walk")) {
             changeAnimation();
         } else {

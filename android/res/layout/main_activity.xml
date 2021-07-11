@@ -1,0 +1,31 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <TableLayout
+        android:id="@+id/image_table"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:stretchColumns="*">
+
+        <!-- everything you already have -->
+<!--        <TableRow>-->
+<!--            <ImageButton-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="300dp"-->
+<!--                android:layout_weight="1" />-->
+<!--            <ImageButton-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="300dp"-->
+<!--                android:layout_weight="1"/>-->
+<!--        </TableRow>-->
+<!--        <TableRow>-->
+<!--            <ImageButton-->
+<!--                android:layout_gravity="left"-->
+<!--                android:layout_width="200dp"-->
+<!--                android:layout_height="300dp"-->
+<!--                android:layout_weight="1" />-->
+<!--        </TableRow>-->
+    </TableLayout>
+</ScrollView>

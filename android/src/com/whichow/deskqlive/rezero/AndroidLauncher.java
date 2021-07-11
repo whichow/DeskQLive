@@ -1,109 +1,87 @@
 package com.whichow.deskqlive.rezero;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.PixelFormat;
-import android.net.Uri;
-import android.os.Build;
+import android.content.SharedPreferences;
+import android.media.Image;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.badlogic.gdx.backends.android.App;
-
-public class AndroidLauncher extends App {
-    View qLiveView;
-    QLive qLive;
-
-	@Override
-	protected void onCreate (Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_blank);
-
-        if (Settings.canDrawOverlays(AndroidLauncher.this)) {
-            AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-            config.r = config.g = config.b = config.a = 8;
-            qLive = new QLive();
-            qLiveView = initializeForView(qLive, config);
-            if (qLiveView instanceof SurfaceView) {
-                SurfaceView glView = (SurfaceView) qLiveView;
-                glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-                glView.setZOrderOnTop(true);
-            }
-//		initialize(new QLive(), config);
-
-            final WindowManager windowManager = getWindowManager();
-            final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-            } else {
-                layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
-            }
-            layoutParams.width = 500;
-            layoutParams.height = 500;
-            layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                    | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
-            layoutParams.format = PixelFormat.TRANSPARENT;
-
-            qLiveView.setOnTouchListener(new View.OnTouchListener() {
-                float lastX, lastY;
-
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    int x = (int) motionEvent.getRawX();
-                    int y = (int) motionEvent.getRawY();
-                    switch (motionEvent.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            lastX = x;
-                            lastY = y;
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            layoutParams.x += (int) (x - lastX);
-                            layoutParams.y += (int) (y - lastY);
-                            windowManager.updateViewLayout(qLiveView, layoutParams);
-                            lastX = x;
-                            lastY = y;
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            qLive.changeAnimation();
-                            break;
-                    }
-                    return true;
-                }
-            });
-
-            windowManager.addView(qLiveView, layoutParams);
-        } else {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            intent.setData(Uri.parse("package:" + getPackageName()));
-            Toast.makeText(AndroidLauncher.this, "需要先允许显示在其他应用上层才可以使用哦！", Toast.LENGTH_LONG).show();
-            startActivity(intent);
-            finish();
-        }
-	}
-
+public class AndroidLauncher extends Activity {
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_activity);
+        TableLayout table = (TableLayout)findViewById(R.id.image_table);
+        TableRow row1 = new TableRow(this);
+        Button remBtn = new Button(this);
+        remBtn.setText("Rem");
+        remBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("atlas", "house_rem/house_rem.atlas");
+                editor.putString("skel", "house_rem/house_rem.skel");
+                editor.commit();
+                startQLiveApp();
+            }
+        });
+        row1.addView(remBtn);
+        Button beatriceBtn = new Button(this);
+        beatriceBtn.setText("Beatrice");
+        beatriceBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("atlas", "house_beatrice/house_beatrice.atlas");
+                editor.putString("skel", "house_beatrice/house_beatrice.skel");
+                editor.commit();
+                startQLiveApp();
+            }
+        });
+        row1.addView(beatriceBtn);
+        table.addView(row1);
+        TableRow row2 = new TableRow(this);
+        Button emiliaBtn = new Button(this);
+        emiliaBtn.setText("Emilia");
+        emiliaBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("atlas", "house_emilia/house_emilia.atlas");
+                editor.putString("skel", "house_emilia/house_emilia.skel");
+                editor.commit();
+                startQLiveApp();
+            }
+        });
+        row2.addView(emiliaBtn);
+        Button ramBtn = new Button(this);
+        ramBtn.setText("Ram");
+        ramBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("atlas", "house_ram/house_ram.atlas");
+                editor.putString("skel", "house_ram/house_ram.skel");
+                editor.commit();
+                startQLiveApp();
+            }
+        });
+        row2.addView(ramBtn);
+        table.addView(row2);
     }
 
-    @Override
-    protected void onDestroy() {
-	    if(qLiveView != null) {
-            getWindowManager().removeView(qLiveView);
-        }
-        super.onDestroy();
+    private void startQLiveApp() {
+        Intent intent = new Intent(this, QLiveApp.class);
+        startActivity(intent);
     }
 }
