@@ -81,7 +81,7 @@ public class AndroidLauncher extends Activity {
     }
 
     private void startQLiveApp() {
-        Intent intent = new Intent(this, QLiveApp.class);
-        startActivity(intent);
+        Intent intent = new Intent(this, QLiveService.class);
+        startService(intent);
     }
 }

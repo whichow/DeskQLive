@@ -27,6 +27,7 @@
             android:theme="@android:style/Theme.Light.NoTitleBar"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout">
         </activity>
+        <service android:name=".QLiveService" />
     </application>
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
