@@ -17,6 +17,7 @@ public class AndroidLauncher extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
         TableLayout table = (TableLayout)findViewById(R.id.image_table);
         TableRow row1 = new TableRow(this);
         Button remBtn = new Button(this);

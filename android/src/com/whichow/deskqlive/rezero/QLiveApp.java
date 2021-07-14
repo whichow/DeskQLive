@@ -1,6 +1,8 @@
 package com.whichow.deskqlive.rezero;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
@@ -27,6 +29,8 @@ import java.util.Random;
 
 public class QLiveApp extends App {
 
+    private static final String DIALOG_TEXT = "需要先允许人家显示在最上层才可以食用哦！";
+
     @Override
     protected void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +54,28 @@ public class QLiveApp extends App {
             Intent intent = new Intent(this, QLiveService.class);
             startService(intent);
         } else {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            intent.setData(Uri.parse("package:" + getPackageName()));
-            Toast.makeText(this, "需要先允许显示在其他应用上层才可以使用哦！", Toast.LENGTH_LONG).show();
-            startActivity(intent);
-            finish();
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+//            dialog.setIcon(R.drawable.ic_launcher);
+//            dialog.setTitle(DIALOG_TITLE);
+            dialog.setMessage(DIALOG_TEXT);
+            dialog.setPositiveButton("好的呢",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                            intent.setData(Uri.parse("package:" + getPackageName()));
+//                            Toast.makeText(this, "需要先允许显示在其他应用上层才可以使用哦！", Toast.LENGTH_LONG).show();
+                            startActivity(intent);
+                            finish();
+                        }
+                    });
+            dialog.setNegativeButton("才不要", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    finish();
+                }
+            });
+            dialog.show();
         }
 
         Button confirmBtn = (Button)findViewById(R.id.confirm);

@@ -29,7 +29,7 @@ public class QLiveService extends AppService {
     private static final int VIEW_HEIGHT = 500;
 
     private static final String NOTIFICATION_TITLE = "从零开始的桌面萌宠";
-    private static final String NOTIFICATION_TEXT = "要保护好我哦，不要让我被清理掉！";
+    private static final String NOTIFICATION_TEXT = "要保护好人家不要被清理掉哦！";
     private static final String NOTIFICATION_CHANNEL_ID = "QLiveService";
     public static final int MANAGER_NOTIFICATION_ID = 0x1001;
 
