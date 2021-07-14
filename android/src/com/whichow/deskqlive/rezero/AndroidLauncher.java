@@ -80,8 +80,15 @@ public class AndroidLauncher extends Activity {
         table.addView(row2);
     }
 
-    private void startQLiveApp() {
+    @Override
+    protected void onResume() {
+        super.onResume();
         Intent intent = new Intent(this, QLiveService.class);
-        startService(intent);
+        stopService(intent);
+    }
+
+    private void startQLiveApp() {
+        Intent intent = new Intent(this, QLiveApp.class);
+        startActivity(intent);
     }
 }
