@@ -45,37 +45,42 @@ public class QLiveApp extends App {
             int n = rand.nextInt(fileNames.length);
             Drawable bgImg = Drawable.createFromStream(getAssets().open("bg/" + fileNames[n]), null);
             Log.d("QLiveApp", "bgImg: " + bgImg);
-            content.setBackground(bgImg);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                content.setBackground(bgImg);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        if (Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(this, QLiveService.class);
-            startService(intent);
-        } else {
-            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-//            dialog.setIcon(R.drawable.ic_launcher);
-//            dialog.setTitle(DIALOG_TITLE);
-            dialog.setMessage(DIALOG_TEXT);
-            dialog.setPositiveButton("好的呢",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                            intent.setData(Uri.parse("package:" + getPackageName()));
-//                            Toast.makeText(this, "需要先允许显示在其他应用上层才可以使用哦！", Toast.LENGTH_LONG).show();
-                            startActivity(intent);
-                            finish();
-                        }
-                    });
-            dialog.setNegativeButton("才不要", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    finish();
-                }
-            });
-            dialog.show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(this, QLiveService.class);
+                intent.setAction(QLiveService.START_QLIVE);
+                startService(intent);
+            } else {
+                final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+    //            dialog.setIcon(R.drawable.ic_launcher);
+    //            dialog.setTitle(DIALOG_TITLE);
+                dialog.setMessage(DIALOG_TEXT);
+                dialog.setPositiveButton("好的呢",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+    //                            Toast.makeText(this, "需要先允许显示在其他应用上层才可以使用哦！", Toast.LENGTH_LONG).show();
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+                dialog.setNegativeButton("才不要", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                });
+                dialog.show();
+            }
         }
 
         Button confirmBtn = (Button)findViewById(R.id.confirm);

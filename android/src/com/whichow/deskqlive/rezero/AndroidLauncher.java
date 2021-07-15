@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
@@ -22,6 +24,9 @@ public class AndroidLauncher extends Activity {
         TableRow row1 = new TableRow(this);
         Button remBtn = new Button(this);
         remBtn.setText("雷姆");
+        remBtn.setBackgroundColor(Color.TRANSPARENT);
+        Drawable remImage = getResources().getDrawable(R.drawable.rem_icon);
+        remBtn.setCompoundDrawablesWithIntrinsicBounds(null, remImage , null, null);
         remBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -36,6 +41,9 @@ public class AndroidLauncher extends Activity {
         row1.addView(remBtn);
         Button beatriceBtn = new Button(this);
         beatriceBtn.setText("贝蒂");
+        beatriceBtn.setBackgroundColor(Color.TRANSPARENT);
+        Drawable beatriceImage = getResources().getDrawable(R.drawable.rem_icon);
+        beatriceBtn.setCompoundDrawablesWithIntrinsicBounds(null, beatriceImage , null, null);
         beatriceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -52,6 +60,9 @@ public class AndroidLauncher extends Activity {
         TableRow row2 = new TableRow(this);
         Button emiliaBtn = new Button(this);
         emiliaBtn.setText("艾米莉亚");
+        emiliaBtn.setBackgroundColor(Color.TRANSPARENT);
+        Drawable emiliaImage = getResources().getDrawable(R.drawable.rem_icon);
+        emiliaBtn.setCompoundDrawablesWithIntrinsicBounds(null, emiliaImage , null, null);
         emiliaBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -66,6 +77,9 @@ public class AndroidLauncher extends Activity {
         row2.addView(emiliaBtn);
         Button ramBtn = new Button(this);
         ramBtn.setText("拉姆");
+        ramBtn.setBackgroundColor(Color.TRANSPARENT);
+        Drawable ramImage = getResources().getDrawable(R.drawable.rem_icon);
+        ramBtn.setCompoundDrawablesWithIntrinsicBounds(null, ramImage , null, null);
         ramBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

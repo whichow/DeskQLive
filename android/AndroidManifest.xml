@@ -28,6 +28,7 @@
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout">
         </activity>
         <service android:name=".QLiveService" />
+        <receiver android:name=".QLiveService$SwitchButtonListener" />
     </application>
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

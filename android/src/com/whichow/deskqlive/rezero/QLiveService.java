@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,13 +18,22 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.RemoteViews;
 
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AppService;
 
 public class QLiveService extends AppService {
+    private static final String TAG = "QLiveService";
+
     View qLiveView;
     QLive qLive;
+
+    WindowManager windowManager;
+    WindowManager.LayoutParams layoutParams;
+
+    public static final String START_QLIVE = "com.whichow.deskqlive.rezero.START_QLIVE";
+    public static final String STOP_QLIVE = "com.whichow.deskqlive.rezero.STOP_QLIVE";
 
     private static final int VIEW_WIDTH = 500;
     private static final int VIEW_HEIGHT = 500;
@@ -32,6 +42,42 @@ public class QLiveService extends AppService {
     private static final String NOTIFICATION_TEXT = "要保护好人家不要被清理掉哦！";
     private static final String NOTIFICATION_CHANNEL_ID = "QLiveService";
     public static final int MANAGER_NOTIFICATION_ID = 0x1001;
+
+    private static final String BUTTON_OFF_TEXT = "快走开啦";
+    private static final String BUTTON_ON_TEXT = "给我回来";
+
+    public static boolean isQLiveShowing = false;
+
+    static RemoteViews remoteViews;
+    static Notification notification;
+    static NotificationManager notificationManager;
+
+    private void addQLiveView() {
+        if(!isQLiveShowing && qLiveView != null) {
+            windowManager.addView(qLiveView, layoutParams);
+            isQLiveShowing = true;
+        }
+    }
+
+    private void removeQLiveView() {
+        if(isQLiveShowing && qLiveView != null) {
+            getWindowManager().removeView(qLiveView);
+            isQLiveShowing = false;
+        }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String action  = intent.getAction();
+        Log.d(TAG, "onStartCommand: " + action);
+        if(intent.getAction().equals(START_QLIVE)) {
+            addQLiveView();
+        } else if(intent.getAction().equals(STOP_QLIVE)) {
+            removeQLiveView();
+        }
+
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     @Override
     public void onCreate () {
@@ -53,8 +99,8 @@ public class QLiveService extends AppService {
         }
 //		initialize(new QLive(), config);
 
-        final WindowManager windowManager = getWindowManager();
-        final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        windowManager = getWindowManager();
+        layoutParams = new WindowManager.LayoutParams();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
@@ -105,27 +151,32 @@ public class QLiveService extends AppService {
                 return true;
             }
         });
-
-        windowManager.addView(qLiveView, layoutParams);
+        addQLiveView();
     }
 
     @Override
     public void onDestroy() {
-        if(qLiveView != null) {
-            getWindowManager().removeView(qLiveView);
-        }
-        Log.d("QLiveService", "onDestroy: ");
+        removeQLiveView();
+//        Log.d("QLiveService", "onDestroy: ");
         super.onDestroy();
     }
 
     private void addForegroundNotification() {
-        createNotificationChannel();
+//        createNotificationChannel();
+        notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+
+        remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+        Intent switchIntent = new Intent(this, SwitchButtonListener.class);
+        PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(this, 0, switchIntent, 0);
+        remoteViews.setOnClickPendingIntent(R.id.switch_button, pendingSwitchIntent);
+        remoteViews.setTextViewText(R.id.switch_button, BUTTON_OFF_TEXT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setLargeIcon(((BitmapDrawable) getResources().getDrawable(R.drawable.ic_launcher)).getBitmap())
-                .setContentTitle(NOTIFICATION_TITLE)
-                .setContentText(NOTIFICATION_TEXT)
+//                .setContentTitle(NOTIFICATION_TITLE)
+//                .setContentText(NOTIFICATION_TEXT)
+                .setContent(remoteViews)
                 .setWhen(System.currentTimeMillis())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
@@ -133,26 +184,27 @@ public class QLiveService extends AppService {
         PendingIntent mainPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
                 msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification notification = mBuilder.setContentIntent(mainPendingIntent)
+        notification = mBuilder.setContentIntent(mainPendingIntent)
                 .setAutoCancel(false).build();
 
-        startForeground(MANAGER_NOTIFICATION_ID, notification);
+        notificationManager.notify(1, notification);
+//        startForeground(MANAGER_NOTIFICATION_ID, notification);
     }
 
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Name";
-            String description = "Description";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            channel.setShowBadge(false);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            if (notificationManager != null) {
-                notificationManager.createNotificationChannel(channel);
-            }
-        }
-    }
+//    private void createNotificationChannel() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            CharSequence name = "Name";
+//            String description = "Description";
+//            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+//            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+//            channel.setDescription(description);
+//            channel.setShowBadge(false);
+//            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+//            if (notificationManager != null) {
+//                notificationManager.createNotificationChannel(channel);
+//            }
+//        }
+//    }
 
     private Intent getStartAppIntent(Context context) {
         Intent intent = context.getPackageManager()
@@ -163,5 +215,23 @@ public class QLiveService extends AppService {
         }
 
         return intent;
+    }
+
+    public static class SwitchButtonListener extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent newIntent = new Intent(context, QLiveService.class);
+            Log.d("SwitchButtonListener", "onReceive: " + QLiveService.isQLiveShowing);
+            if(QLiveService.isQLiveShowing) {
+                newIntent.setAction(QLiveService.STOP_QLIVE);
+                remoteViews.setTextViewText(R.id.switch_button, BUTTON_ON_TEXT);
+                notificationManager.notify(1, notification);
+            } else {
+                newIntent.setAction(QLiveService.START_QLIVE);
+                remoteViews.setTextViewText(R.id.switch_button, BUTTON_OFF_TEXT);
+                notificationManager.notify(1, notification);
+            }
+            context.startService(newIntent);
+        }
     }
 }
