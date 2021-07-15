@@ -32,6 +32,10 @@ public class QLiveService extends AppService {
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
 
+    NotificationManager notificationManager;
+    Notification notification;
+    RemoteViews remoteViews;
+
     public static final String START_QLIVE = "com.whichow.deskqlive.rezero.START_QLIVE";
     public static final String STOP_QLIVE = "com.whichow.deskqlive.rezero.STOP_QLIVE";
 
@@ -43,14 +47,10 @@ public class QLiveService extends AppService {
     private static final String NOTIFICATION_CHANNEL_ID = "QLiveService";
     public static final int MANAGER_NOTIFICATION_ID = 0x1001;
 
-    private static final String BUTTON_OFF_TEXT = "快走开啦";
-    private static final String BUTTON_ON_TEXT = "给我回来";
+    public static final String BUTTON_OFF_TEXT = "快走开啦";
+    public static final String BUTTON_ON_TEXT = "给我回来";
 
     public static boolean isQLiveShowing = false;
-
-    static RemoteViews remoteViews;
-    static Notification notification;
-    static NotificationManager notificationManager;
 
     private void addQLiveView() {
         if(!isQLiveShowing && qLiveView != null) {
@@ -72,8 +72,12 @@ public class QLiveService extends AppService {
         Log.d(TAG, "onStartCommand: " + action);
         if(intent.getAction().equals(START_QLIVE)) {
             addQLiveView();
+            remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_OFF_TEXT);
+            notificationManager.notify(1, notification);
         } else if(intent.getAction().equals(STOP_QLIVE)) {
             removeQLiveView();
+            remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_ON_TEXT);
+            notificationManager.notify(1, notification);
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -215,23 +219,5 @@ public class QLiveService extends AppService {
         }
 
         return intent;
-    }
-
-    public static class SwitchButtonListener extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Intent newIntent = new Intent(context, QLiveService.class);
-            Log.d("SwitchButtonListener", "onReceive: " + QLiveService.isQLiveShowing);
-            if(QLiveService.isQLiveShowing) {
-                newIntent.setAction(QLiveService.STOP_QLIVE);
-                remoteViews.setTextViewText(R.id.switch_button, BUTTON_ON_TEXT);
-                notificationManager.notify(1, notification);
-            } else {
-                newIntent.setAction(QLiveService.START_QLIVE);
-                remoteViews.setTextViewText(R.id.switch_button, BUTTON_OFF_TEXT);
-                notificationManager.notify(1, notification);
-            }
-            context.startService(newIntent);
-        }
     }
 }
