@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -24,12 +27,15 @@ public class AndroidLauncher extends Activity {
 
         TableLayout table = (TableLayout)findViewById(R.id.image_table);
         TableRow row1 = new TableRow(this);
+        row1.setGravity(Gravity.CENTER);
         Button remBtn = new Button(this);
         remBtn.setText("雷姆");
         remBtn.setBackgroundColor(Color.TRANSPARENT);
         Drawable remImage = null;
         try {
             remImage = Drawable.createFromStream(getAssets().open("house_rem/house_rem.icon"), null);
+            Bitmap bitmap = ((BitmapDrawable) remImage).getBitmap();
+            remImage = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 500, 500, true));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,6 +60,8 @@ public class AndroidLauncher extends Activity {
         Drawable beatriceImage = null;
         try {
             beatriceImage = Drawable.createFromStream(getAssets().open("house_beatrice/house_beatrice.icon"), null);
+            Bitmap bitmap = ((BitmapDrawable) beatriceImage).getBitmap();
+            beatriceImage = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 500, 500, true));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -73,13 +81,17 @@ public class AndroidLauncher extends Activity {
         });
         row1.addView(beatriceBtn);
         table.addView(row1);
+
         TableRow row2 = new TableRow(this);
+        row2.setGravity(Gravity.CENTER);
         Button emiliaBtn = new Button(this);
         emiliaBtn.setText("艾米莉亚");
         emiliaBtn.setBackgroundColor(Color.TRANSPARENT);
         Drawable emiliaImage = null;
         try {
             emiliaImage = Drawable.createFromStream(getAssets().open("house_emilia/house_emilia.icon"), null);
+            Bitmap bitmap = ((BitmapDrawable) emiliaImage).getBitmap();
+            emiliaImage = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 500, 500, true));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,6 +116,8 @@ public class AndroidLauncher extends Activity {
         Drawable ramImage = null;
         try {
             ramImage = Drawable.createFromStream(getAssets().open("house_ram/house_ram.icon"), null);
+            Bitmap bitmap = ((BitmapDrawable) ramImage).getBitmap();
+            ramImage = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 500, 500, true));
         } catch (IOException e) {
             e.printStackTrace();
         }
