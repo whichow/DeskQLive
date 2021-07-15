@@ -26,6 +26,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AppService;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 public class QLiveService extends AppService {
     private static final String TAG = "QLiveService";
@@ -36,7 +37,7 @@ public class QLiveService extends AppService {
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
 
-    NotificationManager notificationManager;
+//    NotificationManager notificationManager;
     Notification notification;
     RemoteViews remoteViews;
 
@@ -70,6 +71,21 @@ public class QLiveService extends AppService {
         }
     }
 
+    private void collapseStatusBar(Context context) {
+        try {
+            Object statusBarManager = context.getSystemService("statusbar");
+            Method collapse;
+            if (Build.VERSION.SDK_INT <= 16) {
+                collapse = statusBarManager.getClass().getMethod("collapse");
+            } else {
+                collapse = statusBarManager.getClass().getMethod("collapsePanels");
+            }
+            collapse.invoke(statusBarManager);
+        } catch (Exception localException) {
+            localException.printStackTrace();
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action  = intent.getAction();
@@ -94,7 +110,11 @@ public class QLiveService extends AppService {
             removeQLiveView();
             remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_ON_TEXT);
         }
-        notificationManager.notify(1, notification);
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(MANAGER_NOTIFICATION_ID, notification);
+
+//        startForeground(MANAGER_NOTIFICATION_ID, notification);
+        collapseStatusBar(this);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -177,13 +197,13 @@ public class QLiveService extends AppService {
     @Override
     public void onDestroy() {
         removeQLiveView();
-//        Log.d("QLiveService", "onDestroy: ");
+        Log.d("QLiveService", "onDestroy: ");
         super.onDestroy();
     }
 
     private void addForegroundNotification() {
-//        createNotificationChannel();
-        notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        createNotificationChannel();
+//        notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
         remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
         Intent switchIntent = new Intent(this, SwitchButtonListener.class);
@@ -191,7 +211,7 @@ public class QLiveService extends AppService {
         remoteViews.setOnClickPendingIntent(R.id.switch_button, pendingSwitchIntent);
         remoteViews.setTextViewText(R.id.switch_button, BUTTON_OFF_TEXT);
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setLargeIcon(((BitmapDrawable) getResources().getDrawable(R.drawable.ic_launcher)).getBitmap())
 //                .setContentTitle(NOTIFICATION_TITLE)
@@ -204,27 +224,27 @@ public class QLiveService extends AppService {
         PendingIntent mainPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
                 msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        notification = mBuilder.setContentIntent(mainPendingIntent)
+        notification = notificationBuilder.setContentIntent(mainPendingIntent)
                 .setAutoCancel(false).build();
 
-        notificationManager.notify(1, notification);
-//        startForeground(MANAGER_NOTIFICATION_ID, notification);
+//        notificationManager.notify(1, notification);
+        startForeground(MANAGER_NOTIFICATION_ID, notification);
     }
 
-//    private void createNotificationChannel() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            CharSequence name = "Name";
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "DeskQLive";
 //            String description = "Description";
-//            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-//            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
 //            channel.setDescription(description);
-//            channel.setShowBadge(false);
-//            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-//            if (notificationManager != null) {
-//                notificationManager.createNotificationChannel(channel);
-//            }
-//        }
-//    }
+            channel.setShowBadge(false);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
 
     private Intent getStartAppIntent(Context context) {
         Intent intent = context.getPackageManager()
