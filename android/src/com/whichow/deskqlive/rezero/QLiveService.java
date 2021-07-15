@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -22,6 +24,8 @@ import android.widget.RemoteViews;
 
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AppService;
+
+import java.io.IOException;
 
 public class QLiveService extends AppService {
     private static final String TAG = "QLiveService";
@@ -70,15 +74,27 @@ public class QLiveService extends AppService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action  = intent.getAction();
         Log.d(TAG, "onStartCommand: " + action);
+
+        SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
+        String iconPath = sharedPref.getString("icon", "");
+
+        Drawable icon = null;
+        try {
+            icon = Drawable.createFromStream(getAssets().open(iconPath), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        remoteViews.setImageViewBitmap(R.id.icon_img, ((BitmapDrawable)icon).getBitmap());
+
         if(intent.getAction().equals(START_QLIVE)) {
             addQLiveView();
             remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_OFF_TEXT);
-            notificationManager.notify(1, notification);
         } else if(intent.getAction().equals(STOP_QLIVE)) {
             removeQLiveView();
             remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_ON_TEXT);
-            notificationManager.notify(1, notification);
         }
+        notificationManager.notify(1, notification);
 
         return super.onStartCommand(intent, flags, startId);
     }

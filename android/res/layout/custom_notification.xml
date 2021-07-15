@@ -5,6 +5,7 @@
     android:layout_height="match_parent">
 
     <ImageView
+        android:id="@+id/icon_img"
         android:src="@drawable/ic_launcher"
         android:layout_width="100dp"
         android:layout_height="match_parent" />
@@ -34,5 +35,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:textSize="16sp"
+        android:text="我在哪里"
         android:background="@android:color/white" />
 </LinearLayout>
