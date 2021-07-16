@@ -8,12 +8,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -37,9 +41,7 @@ public class QLiveService extends AppService {
     WindowManager windowManager;
     WindowManager.LayoutParams layoutParams;
 
-//    NotificationManager notificationManager;
     Notification notification;
-    RemoteViews remoteViews;
 
     public static final String START_QLIVE = "com.whichow.deskqlive.rezero.START_QLIVE";
     public static final String STOP_QLIVE = "com.whichow.deskqlive.rezero.STOP_QLIVE";
@@ -57,63 +59,22 @@ public class QLiveService extends AppService {
 
     public static boolean isQLiveShowing = false;
 
-    private void addQLiveView() {
-        if(!isQLiveShowing && qLiveView != null) {
-            windowManager.addView(qLiveView, layoutParams);
-            isQLiveShowing = true;
-        }
-    }
-
-    private void removeQLiveView() {
-        if(isQLiveShowing && qLiveView != null) {
-            getWindowManager().removeView(qLiveView);
-            isQLiveShowing = false;
-        }
-    }
-
-    private void collapseStatusBar(Context context) {
-        try {
-            Object statusBarManager = context.getSystemService("statusbar");
-            Method collapse;
-            if (Build.VERSION.SDK_INT <= 16) {
-                collapse = statusBarManager.getClass().getMethod("collapse");
-            } else {
-                collapse = statusBarManager.getClass().getMethod("collapsePanels");
-            }
-            collapse.invoke(statusBarManager);
-        } catch (Exception localException) {
-            localException.printStackTrace();
-        }
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action  = intent.getAction();
         Log.d(TAG, "onStartCommand: " + action);
 
-        SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
-        String iconPath = sharedPref.getString("icon", "");
-
-        Drawable icon = null;
-        try {
-            icon = Drawable.createFromStream(getAssets().open(iconPath), null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        remoteViews.setImageViewBitmap(R.id.icon_img, ((BitmapDrawable)icon).getBitmap());
-
         if(intent.getAction().equals(START_QLIVE)) {
             addQLiveView();
-            remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_OFF_TEXT);
         } else if(intent.getAction().equals(STOP_QLIVE)) {
             removeQLiveView();
-            remoteViews.setTextViewText(R.id.switch_button, QLiveService.BUTTON_ON_TEXT);
         }
+
+        notification.largeIcon = getCurrentIcon();
+        notification.actions[0] = createAction();
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(MANAGER_NOTIFICATION_ID, notification);
 
-//        startForeground(MANAGER_NOTIFICATION_ID, notification);
         collapseStatusBar(this);
 
         return super.onStartCommand(intent, flags, startId);
@@ -205,20 +166,20 @@ public class QLiveService extends AppService {
         createNotificationChannel();
 //        notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
-        remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
-        Intent switchIntent = new Intent(this, SwitchButtonListener.class);
-        PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(this, 0, switchIntent, 0);
-        remoteViews.setOnClickPendingIntent(R.id.switch_button, pendingSwitchIntent);
-        remoteViews.setTextViewText(R.id.switch_button, BUTTON_OFF_TEXT);
+        Intent switchIntent = new Intent(getApplicationContext(), SwitchButtonListener.class);
+        PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
+                switchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+        Notification.Builder notificationBuilder = new Notification.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setLargeIcon(((BitmapDrawable) getResources().getDrawable(R.drawable.ic_launcher)).getBitmap())
-//                .setContentTitle(NOTIFICATION_TITLE)
-//                .setContentText(NOTIFICATION_TEXT)
-                .setContent(remoteViews)
-                .setWhen(System.currentTimeMillis())
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//                .setLargeIcon(((BitmapDrawable) getResources().getDrawable(R.drawable.ic_launcher)).getBitmap())
+                .setContentTitle(NOTIFICATION_TITLE)
+                .setContentText(NOTIFICATION_TEXT)
+//                .setContent(remoteViews)
+//                .setWhen(System.currentTimeMillis())
+                .addAction(createAction())
+                .setOngoing(true);
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         Intent msgIntent = getStartAppIntent(getApplicationContext());
         PendingIntent mainPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
@@ -227,7 +188,6 @@ public class QLiveService extends AppService {
         notification = notificationBuilder.setContentIntent(mainPendingIntent)
                 .setAutoCancel(false).build();
 
-//        notificationManager.notify(1, notification);
         startForeground(MANAGER_NOTIFICATION_ID, notification);
     }
 
@@ -255,5 +215,73 @@ public class QLiveService extends AppService {
         }
 
         return intent;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private Notification.Action createAction() {
+        Intent switchIntent = new Intent(getApplicationContext(), SwitchButtonListener.class);
+        PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
+                switchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        String buttonText = isQLiveShowing ? BUTTON_OFF_TEXT : BUTTON_ON_TEXT;
+
+        return new Notification.Action(R.drawable.ic_launcher, buttonText, pendingSwitchIntent);
+    }
+
+    private RemoteViews createCustomView() {
+        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+        Intent switchIntent = new Intent(getApplicationContext(), SwitchButtonListener.class);
+        PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
+                switchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        remoteViews.setOnClickPendingIntent(R.id.switch_button, pendingSwitchIntent);
+        remoteViews.setImageViewBitmap(R.id.icon_img, getCurrentIcon());
+        if(isQLiveShowing) {
+            remoteViews.setTextViewText(R.id.switch_button, BUTTON_OFF_TEXT);
+        } else {
+            remoteViews.setTextViewText(R.id.switch_button, BUTTON_ON_TEXT);
+        }
+        return remoteViews;
+    }
+
+    private Bitmap getCurrentIcon() {
+        SharedPreferences sharedPref = getSharedPreferences("path", Context.MODE_PRIVATE);
+        String iconPath = sharedPref.getString("icon", "");
+
+        Bitmap icon = null;
+        try {
+            icon = BitmapFactory.decodeStream(getAssets().open(iconPath));
+            Log.d(TAG, "onStartCommand: " + icon.getWidth() + "," + icon.getHeight());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return icon;
+    }
+
+    private void addQLiveView() {
+        if(!isQLiveShowing && qLiveView != null) {
+            windowManager.addView(qLiveView, layoutParams);
+            isQLiveShowing = true;
+        }
+    }
+
+    private void removeQLiveView() {
+        if(isQLiveShowing && qLiveView != null) {
+            getWindowManager().removeView(qLiveView);
+            isQLiveShowing = false;
+        }
+    }
+
+    private void collapseStatusBar(Context context) {
+        try {
+            Object statusBarManager = context.getSystemService("statusbar");
+            Method collapse;
+            if (Build.VERSION.SDK_INT <= 16) {
+                collapse = statusBarManager.getClass().getMethod("collapse");
+            } else {
+                collapse = statusBarManager.getClass().getMethod("collapsePanels");
+            }
+            collapse.invoke(statusBarManager);
+        } catch (Exception localException) {
+            localException.printStackTrace();
+        }
     }
 }
