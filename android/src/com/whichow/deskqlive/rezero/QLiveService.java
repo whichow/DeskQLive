@@ -17,8 +17,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -217,7 +215,6 @@ public class QLiveService extends AppService {
         return intent;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private Notification.Action createAction() {
         Intent switchIntent = new Intent(getApplicationContext(), SwitchButtonListener.class);
         PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
